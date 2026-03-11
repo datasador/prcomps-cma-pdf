@@ -5,17 +5,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get("/render", async (req, res) => {
-
   const url = req.query.url;
 
   if (!url) {
     return res.status(400).send("Missing URL parameter");
   }
 
-  try {
+  let browser;
 
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox","--disable-setuid-sandbox"]
+  try {
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 
     const page = await browser.newPage();
@@ -25,14 +26,18 @@ app.get("/render", async (req, res) => {
       timeout: 60000
     });
 
-    await page.waitForTimeout(4000);
+    await new Promise(resolve => setTimeout(resolve, 4000));
 
     const pdf = await page.pdf({
       format: "Letter",
-      printBackground: true
+      printBackground: true,
+      margin: {
+        top: "12mm",
+        right: "10mm",
+        bottom: "12mm",
+        left: "10mm"
+      }
     });
-
-    await browser.close();
 
     res.set({
       "Content-Type": "application/pdf",
@@ -40,14 +45,18 @@ app.get("/render", async (req, res) => {
     });
 
     res.send(pdf);
-
   } catch (error) {
-
-    console.error(error);
-    res.status(500).send("PDF generation error");
-
+    console.error("PDF generation error:", error);
+    res.status(500).send("PDF generation error: " + error.message);
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
+});
 
+app.get("/", (req, res) => {
+  res.send("PRComps CMA PDF server is running.");
 });
 
 app.listen(PORT, () => {
