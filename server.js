@@ -21,45 +21,54 @@ app.get("/render", async (req, res) => {
 
     const page = await browser.newPage();
 
+    await page.setViewport({
+      width: 1400,
+      height: 1800,
+      deviceScaleFactor: 2
+    });
+
     await page.goto(url, {
       waitUntil: "networkidle2",
       timeout: 60000
     });
 
     await page.waitForSelector("#reportContent", { timeout: 15000 });
+    await page.evaluate(() => document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
+    await new Promise(resolve => setTimeout(resolve, 800));
+    await page.emulateMediaType("print");
 
     const pdf = await page.pdf({
-  format: "Letter",
-  printBackground: true,
+      format: "Letter",
+      printBackground: true,
 
-  displayHeaderFooter: true,
+      displayHeaderFooter: true,
 
-  headerTemplate: `
-    <div style="width:100%; font-size:10px;"></div>
-  `,
+      headerTemplate: `
+        <div style="width:100%; font-size:10px;"></div>
+      `,
 
-  footerTemplate: `
-  <div style="
-    width:100%;
-    font-size:10px;
-    color:#0e4d9f;
-    padding:0 10mm;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-  ">
-    <span>PRComps – Comparative Market Analysis</span>
-    <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
-  </div>
-`,
+      footerTemplate: `
+        <div style="
+          width:100%;
+          font-size:10px;
+          color:#0e4d9f;
+          padding:0 10mm;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+        ">
+          <span>PRComps – Comparative Market Analysis</span>
+          <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+        </div>
+      `,
 
-  margin: {
-    top: "12mm",
-    right: "10mm",
-    bottom: "18mm",
-    left: "10mm"
-  }
-});
+      margin: {
+        top: "12mm",
+        right: "10mm",
+        bottom: "18mm",
+        left: "10mm"
+      }
+    });
 
     res.set({
       "Content-Type": "application/pdf",
