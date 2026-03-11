@@ -1,0 +1,13 @@
+{
+  "name": "prcomps-cma-pdf",
+  "version": "1.0.0",
+  "description": "PRComps CMA PDF Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "puppeteer": "^22.8.2"
+  }
+}
