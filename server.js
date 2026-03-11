@@ -29,15 +29,34 @@ app.get("/render", async (req, res) => {
     await new Promise(resolve => setTimeout(resolve, 4000));
 
     const pdf = await page.pdf({
-      format: "Letter",
-      printBackground: true,
-      margin: {
-        top: "12mm",
-        right: "10mm",
-        bottom: "12mm",
-        left: "10mm"
-      }
-    });
+  format: "Letter",
+  printBackground: true,
+
+  displayHeaderFooter: true,
+
+  headerTemplate: `
+    <div style="width:100%; font-size:10px;"></div>
+  `,
+
+  footerTemplate: `
+    <div style="
+      width:100%;
+      font-size:10px;
+      color:#6b7280;
+      padding:0 10mm;
+      text-align:right;
+    ">
+      Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+    </div>
+  `,
+
+  margin: {
+    top: "12mm",
+    right: "10mm",
+    bottom: "18mm",
+    left: "10mm"
+  }
+});
 
     res.set({
       "Content-Type": "application/pdf",
