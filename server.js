@@ -39,16 +39,19 @@ app.get("/render", async (req, res) => {
   `,
 
   footerTemplate: `
-    <div style="
-      width:100%;
-      font-size:10px;
-      color:#6b7280;
-      padding:0 10mm;
-      text-align:right;
-    ">
-      Page <span class="pageNumber"></span> of <span class="totalPages"></span>
-    </div>
-  `,
+  <div style="
+    width:100%;
+    font-size:10px;
+    color:#6b7280;
+    padding:0 10mm;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  ">
+    <span>PRComps – Comparative Market Analysis</span>
+    <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+  </div>
+`,
 
   margin: {
     top: "12mm",
