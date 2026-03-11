@@ -26,7 +26,7 @@ app.get("/render", async (req, res) => {
       timeout: 60000
     });
 
-    await new Promise(resolve => setTimeout(resolve, 4000));
+    await page.waitForSelector("#reportContent", { timeout: 15000 });
 
     const pdf = await page.pdf({
   format: "Letter",
