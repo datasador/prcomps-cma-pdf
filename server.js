@@ -42,7 +42,7 @@ app.get("/render", async (req, res) => {
   <div style="
     width:100%;
     font-size:10px;
-    color:#6b7280;
+    color:#0e4d9f;
     padding:0 10mm;
     display:flex;
     justify-content:space-between;
