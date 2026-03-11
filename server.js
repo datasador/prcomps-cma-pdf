@@ -70,9 +70,24 @@ app.get("/render", async (req, res) => {
       }
     });
 
+    const d = new Date();
+
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    const ts =
+      d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0") + "-" +
+      hours + "-" + minutes + ampm;
+
     res.set({
       "Content-Type": "application/pdf",
-      "Content-Disposition": "attachment; filename=PRComps_CMA.pdf"
+      "Content-Disposition": `attachment; filename=PRComps-CMA-${ts}.pdf`
     });
 
     res.send(pdf);
