@@ -34,7 +34,7 @@ app.get("/render", async (req, res) => {
 
     await page.waitForSelector("#reportContent", { timeout: 15000 });
     await page.evaluate(() => document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     await page.emulateMediaType("print");
 
     const pdf = await page.pdf({
