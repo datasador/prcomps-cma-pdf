@@ -48,9 +48,17 @@ app.get("/render", async (req, res) => {
         : Promise.resolve()
     );
 
-    await page.waitForFunction(() => {
-      return window.__PRC_MAP_READY === true;
-    }, { timeout: 20000 });
+        try {
+      await page.waitForFunction(() => {
+        return window.__PRC_MAP_READY === true;
+      }, { timeout: 12000 });
+    } catch (e) {
+      // fallback if the map-ready flag never gets set
+      await page.evaluate(() => {
+        window.dispatchEvent(new Event("resize"));
+      });
+      await new Promise(resolve => setTimeout(resolve, 1800));
+    }
 
     await page.evaluate(() => {
       window.dispatchEvent(new Event("resize"));
