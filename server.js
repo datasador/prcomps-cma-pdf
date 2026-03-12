@@ -56,13 +56,10 @@ app.get("/render", async (req, res) => {
     }, { timeout: 15000 });
 
     await page.emulateMediaType("print");
-    await new Promise(resolve => setTimeout(resolve, 600));
 
     await page.evaluate(() => {
       window.dispatchEvent(new Event("resize"));
     });
-
-    await new Promise(resolve => setTimeout(resolve, 2200));
 
     await page.waitForFunction(() => {
       const el = document.querySelector("#mapBox");
@@ -70,6 +67,26 @@ app.get("/render", async (req, res) => {
       const r = el.getBoundingClientRect();
       return r.width > 300 && r.height > 500;
     }, { timeout: 15000 });
+
+    await page.waitForFunction(() => {
+      const mapBox = document.querySelector("#mapBox");
+      if (!mapBox) return false;
+
+      const tiles = Array.from(mapBox.querySelectorAll(".leaflet-tile"));
+      if (!tiles.length) return false;
+
+      return tiles.every(img => img.complete && img.naturalWidth > 0);
+    }, { timeout: 20000 });
+
+    await page.evaluate(() => {
+      const mapBox = document.getElementById("mapBox");
+      if (!mapBox) return;
+
+      const allTiles = Array.from(mapBox.querySelectorAll(".leaflet-tile"));
+      allTiles.forEach(img => {
+        img.style.opacity = "1";
+      });
+    });
 
     const mapHandle = await page.$("#mapBox");
     if (!mapHandle) {
@@ -82,7 +99,7 @@ app.get("/render", async (req, res) => {
       encoding: "base64"
     });
 
-      await page.evaluate((base64) => {
+    await page.evaluate((base64) => {
       const mapBox = document.getElementById("mapBox");
       if (!mapBox) return;
 
@@ -99,8 +116,6 @@ app.get("/render", async (req, res) => {
 
       mapBox.appendChild(img);
     }, mapImageBase64);
-
-    await new Promise(resolve => setTimeout(resolve, 500));
 
     const pdf = await page.pdf({
       format: "Letter",
