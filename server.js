@@ -24,7 +24,7 @@ app.get("/render", async (req, res) => {
     await page.setViewport({
       width: 1400,
       height: 1800,
-      deviceScaleFactor: 2
+      deviceScaleFactor: 1.5
     });
 
     await page.goto(url, {
@@ -49,44 +49,14 @@ app.get("/render", async (req, res) => {
     );
 
     await page.waitForFunction(() => {
-      const el = document.querySelector("#mapBox");
-      if (!el) return false;
-      const r = el.getBoundingClientRect();
-      return r.width > 300 && r.height > 300;
-    }, { timeout: 15000 });
-
-    await page.emulateMediaType("print");
+      return window.__PRC_MAP_READY === true;
+    }, { timeout: 20000 });
 
     await page.evaluate(() => {
       window.dispatchEvent(new Event("resize"));
     });
 
-    await page.waitForFunction(() => {
-      const el = document.querySelector("#mapBox");
-      if (!el) return false;
-      const r = el.getBoundingClientRect();
-      return r.width > 300 && r.height > 500;
-    }, { timeout: 15000 });
-
-    await page.waitForFunction(() => {
-      const mapBox = document.querySelector("#mapBox");
-      if (!mapBox) return false;
-
-      const tiles = Array.from(mapBox.querySelectorAll(".leaflet-tile"));
-      if (!tiles.length) return false;
-
-      return tiles.every(img => img.complete && img.naturalWidth > 0);
-    }, { timeout: 20000 });
-
-    await page.evaluate(() => {
-      const mapBox = document.getElementById("mapBox");
-      if (!mapBox) return;
-
-      const allTiles = Array.from(mapBox.querySelectorAll(".leaflet-tile"));
-      allTiles.forEach(img => {
-        img.style.opacity = "1";
-      });
-    });
+    await new Promise(resolve => setTimeout(resolve, 600));
 
     const mapHandle = await page.$("#mapBox");
     if (!mapHandle) {
@@ -95,7 +65,7 @@ app.get("/render", async (req, res) => {
 
     const mapImageBase64 = await mapHandle.screenshot({
       type: "jpeg",
-      quality: 70,
+      quality: 72,
       encoding: "base64"
     });
 
@@ -112,10 +82,13 @@ app.get("/render", async (req, res) => {
       img.style.width = "100%";
       img.style.height = "100%";
       img.style.display = "block";
-      img.style.objectFit = "contain";
+      img.style.objectFit = "cover";
 
       mapBox.appendChild(img);
     }, mapImageBase64);
+
+    await page.emulateMediaType("print");
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     const pdf = await page.pdf({
       format: "Letter",
