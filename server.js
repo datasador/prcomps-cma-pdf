@@ -55,11 +55,21 @@ app.get("/render", async (req, res) => {
       return r.width > 300 && r.height > 300;
     }, { timeout: 15000 });
 
+    await page.emulateMediaType("print");
+    await new Promise(resolve => setTimeout(resolve, 600));
+
     await page.evaluate(() => {
       window.dispatchEvent(new Event("resize"));
     });
 
     await new Promise(resolve => setTimeout(resolve, 2200));
+
+    await page.waitForFunction(() => {
+      const el = document.querySelector("#mapBox");
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 300 && r.height > 500;
+    }, { timeout: 15000 });
 
     const mapHandle = await page.$("#mapBox");
     if (!mapHandle) {
@@ -83,12 +93,11 @@ app.get("/render", async (req, res) => {
       img.style.width = "100%";
       img.style.height = "100%";
       img.style.display = "block";
-      img.style.objectFit = "cover";
+      img.style.objectFit = "fill";
 
       mapBox.appendChild(img);
     }, mapImageBase64);
 
-    await page.emulateMediaType("print");
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const pdf = await page.pdf({
