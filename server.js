@@ -41,6 +41,12 @@ app.get("/render", async (req, res) => {
       timeout: 15000
     });
 
+    await page.waitForFunction(() => {
+      const img = document.querySelector("#mapBox img");
+      if (!img) return true;
+      return img.complete && img.naturalWidth > 0;
+    }, { timeout: 15000 });
+
     await page.evaluate(() =>
       document.fonts && document.fonts.ready
         ? document.fonts.ready
