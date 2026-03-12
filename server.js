@@ -77,7 +77,8 @@ app.get("/render", async (req, res) => {
     }
 
     const mapImageBase64 = await mapHandle.screenshot({
-      type: "png",
+      type: "jpeg",
+      quality: 70,
       encoding: "base64"
     });
 
