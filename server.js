@@ -28,8 +28,8 @@ app.get("/render", async (req, res) => {
     });
 
     await page.goto(url, {
-      waitUntil: "networkidle2",
-      timeout: 60000
+    waitUntil: "domcontentloaded",
+    timeout: 60000
     });
 
     await page.waitForSelector("#reportContent", {
