@@ -82,19 +82,20 @@ app.get("/render", async (req, res) => {
       encoding: "base64"
     });
 
-    await page.evaluate((base64) => {
+      await page.evaluate((base64) => {
       const mapBox = document.getElementById("mapBox");
       if (!mapBox) return;
 
       mapBox.innerHTML = "";
+      mapBox.style.background = "#f8fafc";
 
       const img = document.createElement("img");
-      img.src = "data:image/png;base64," + base64;
+      img.src = "data:image/jpeg;base64," + base64;
       img.alt = "Comparable Sales Map";
       img.style.width = "100%";
       img.style.height = "100%";
       img.style.display = "block";
-      img.style.objectFit = "fill";
+      img.style.objectFit = "contain";
 
       mapBox.appendChild(img);
     }, mapImageBase64);
