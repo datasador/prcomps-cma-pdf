@@ -32,10 +32,64 @@ app.get("/render", async (req, res) => {
       timeout: 60000
     });
 
-    await page.waitForSelector("#reportContent", { timeout: 15000 });
-    await page.evaluate(() => document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
-    await page.emulateMediaType("print");
+    await page.waitForSelector("#reportContent", {
+      visible: true,
+      timeout: 15000
+    });
+
+    await page.waitForSelector("#mapBox", {
+      visible: true,
+      timeout: 15000
+    });
+
+    await page.evaluate(() =>
+      document.fonts && document.fonts.ready
+        ? document.fonts.ready
+        : Promise.resolve()
+    );
+
+    await page.waitForFunction(() => {
+      const el = document.querySelector("#mapBox");
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 300 && r.height > 300;
+    }, { timeout: 15000 });
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+
     await new Promise(resolve => setTimeout(resolve, 2200));
+
+    const mapHandle = await page.$("#mapBox");
+    if (!mapHandle) {
+      throw new Error("mapBox not found");
+    }
+
+    const mapImageBase64 = await mapHandle.screenshot({
+      type: "png",
+      encoding: "base64"
+    });
+
+    await page.evaluate((base64) => {
+      const mapBox = document.getElementById("mapBox");
+      if (!mapBox) return;
+
+      mapBox.innerHTML = "";
+
+      const img = document.createElement("img");
+      img.src = "data:image/png;base64," + base64;
+      img.alt = "Comparable Sales Map";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.display = "block";
+      img.style.objectFit = "cover";
+
+      mapBox.appendChild(img);
+    }, mapImageBase64);
+
+    await page.emulateMediaType("print");
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     const pdf = await page.pdf({
       format: "Letter",
