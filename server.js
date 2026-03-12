@@ -37,8 +37,7 @@ app.get("/render", async (req, res) => {
       timeout: 15000
     });
 
-    await page.waitForSelector("#mapBox", {
-      visible: true,
+    await page.waitForSelector("#mapBox img, #mapBox .text-muted, #mapBox .text-danger", {
       timeout: 15000
     });
 
@@ -48,55 +47,8 @@ app.get("/render", async (req, res) => {
         : Promise.resolve()
     );
 
-        try {
-      await page.waitForFunction(() => {
-        return window.__PRC_MAP_READY === true;
-      }, { timeout: 12000 });
-    } catch (e) {
-      // fallback if the map-ready flag never gets set
-      await page.evaluate(() => {
-        window.dispatchEvent(new Event("resize"));
-      });
-      await new Promise(resolve => setTimeout(resolve, 1800));
-    }
-
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    const mapHandle = await page.$("#mapBox");
-    if (!mapHandle) {
-      throw new Error("mapBox not found");
-    }
-
-    const mapImageBase64 = await mapHandle.screenshot({
-      type: "jpeg",
-      quality: 72,
-      encoding: "base64"
-    });
-
-    await page.evaluate((base64) => {
-      const mapBox = document.getElementById("mapBox");
-      if (!mapBox) return;
-
-      mapBox.innerHTML = "";
-      mapBox.style.background = "#f8fafc";
-
-      const img = document.createElement("img");
-      img.src = "data:image/jpeg;base64," + base64;
-      img.alt = "Comparable Sales Map";
-      img.style.width = "100%";
-      img.style.height = "100%";
-      img.style.display = "block";
-      img.style.objectFit = "cover";
-
-      mapBox.appendChild(img);
-    }, mapImageBase64);
-
     await page.emulateMediaType("print");
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     const pdf = await page.pdf({
       format: "Letter",
